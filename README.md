@@ -1,97 +1,44 @@
-# UPPMAX Documentation
+# LLM Wiki
+A local LLM wiki maintainer using Ollama and LangChain that reads markdown files from your Obsidian `Clippings` folder and rebuilds a wiki inside `AI Wiki`. This is based on Andrej Karpathy’s idea. It includes:
 
-<!-- markdownlint-disable MD013 --><!-- Badges cannot be split up over lines, hence will break 80 characters per line -->
+- `llm_wiki_builder.py`: rebuilds the wiki from raw markdown sources
+- `llm_wiki_maintainer.py`: a LangChain agent that answers questions about your knowledge base
 
-[![Check links](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/check_links.yaml/badge.svg?branch=main)](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/check_links.yaml)
-[![Check Markdown](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/check_markdown.yaml/badge.svg?branch=main)](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/check_markdown.yaml)
-[![Check spelling](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/check_spelling.yaml/badge.svg?branch=main)](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/check_spelling.yaml)
-[![Create website](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/create_website.yaml/badge.svg?branch=main)](https://github.com/UPPMAX/UPPMAX-documentation/actions/workflows/create_website.yaml)
+It still does not implement the full incremental maintenance flow from the idea document, but the query agent follows the same pattern at a smaller scale.
 
-<!-- markdownlint-enable MD013 -->
+You can watch the videos on my YouTube:
 
-This repository contains the source code for the [UPPMAX
-documentation](https://uppmax.github.io/UPPMAX-documentation/)
+- [Build the wiki](https://youtu.be/l4EzuMKmeA0?si=wqP4O_w3a-99mstQ)
+- [Query the wiki](https://youtu.be/4D8FjzJXJd4)
 
-## Branch descriptions
+# Pre-requisites
+Install Ollama on your local machine from the [official website](https://ollama.com/). And then pull the Gemma model:
 
-Branch name|Description
------------|-------------------------------------------------------------------------------
-`main`     |The main branch, runs all CI scripts
-`develop`  |A develop branch, does not spellcheck, does not deploy the website
-`issue_x`  |A branch named after an Issue, does not spellcheck, does not deploy the website
-`gh-pages` |The GitHub Pages branch, maintained by GitHub Actions
+```bash
+ollama pull gemma4:e4b
+```
 
-## [Contributing](docs/CONTRIBUTING.md)
+Install the dependencies using pip:
 
-See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
-
-## Working on the documentation locally
-
-To work on the website locally first create a virtual environment and install
-the required dependencies
-
-``` bash
-python3 -m venv uppmax_venv
-source uppmax_venv/bin/activate
+```bash
 pip install -r requirements.txt
 ```
 
-Then activate the environment and serve the website on localhost
-(the `--livereload` flag needs to be set explicitly due to unfixed bug)
+Set your Obsidian vault path by updating `OBSIDIAN_DIR` in both `llm_wiki_builder.py` and `llm_wiki_maintainer.py`:
 
-``` bash
-mkdocs serve --livereload
+```python
+OBSIDIAN_DIR = Path("PUT_YOUR_OBSIDIAN_PATH")
 ```
 
-## Optional dependencies
-
-### Software table
-
-Dependencies:
+# Run
+Build the wiki:
 
 ```bash
-pip install natsort
+python llm_wiki_builder.py
 ```
 
-The software table is generated on each deploy on GitHub actions,
-so you have to do that manually if you want to view it locally:
-
-``` bash
-./scripts/create_software_table.sh
-```
-
-### Text-to-speech
-
-Dependencies:
+Run the question-answering agent:
 
 ```bash
-pip install beautifulsoup4\>=4.11.1 gTTS\>=2.2.4
+streamlit run llm_wiki_maintainer.py
 ```
-
-The script `md_to_speech.py` takes an `.md` file, parses the text and generates
-an mp3 using [`gTTS`](https://gtts.readthedocs.io/en/latest/). Run it by
-
-```bash
-python3 scripts/md_to_speech.py --input txt.md --lang en
-```
-
-## Files used by continuous integration scripts
-
-<!-- markdownlint-disable MD013 --><!-- Tables cannot be split up over lines, hence will break 80 characters per line -->
-
-Filename                                  |Descriptions
-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------
-[`mlc_config.json`](mlc_config.json)        |Configuration of the link checker, use `markdown-link-check --config mlc_config.json --quiet docs/**/*.md` to do link checking locally
-[`.spellcheck.yml`](.spellcheck.yml)        |Configuration of the spell checker, use `pyspelling -c .spellcheck.yml` to do spellcheck locally
-[`.wordlist.txt`](.wordlist.txt)            |Whitelisted words for the spell checker, use `pyspelling -c .spellcheck.yml` to do spellcheck locally
-[`.markdownlint.jsonc`](.markdownlint.jsonc)|Configuration of the Markdown linter, use `markdownlint "**/*.md"` to do markdown linting locally. The name of this file is a default name.
-[`.markdownlintignore`](.markdownlintignore)|Files ignored by the Markdown linter, use `markdownlint "**/*.md"` to do markdown linting locally. The name of this file is a default name.
-
-<!-- markdownlint-enable MD013 -->
-
-## Credits
-
-The website is created using
-[mkdocs-material](https://squidfunk.github.io/mkdocs-material). The landing
-page and layout was inspired by the documentation of the HPC cluster
-[LUMI](https://docs.lumi-supercomputer.eu/).
